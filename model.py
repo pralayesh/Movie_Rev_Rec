@@ -10,29 +10,29 @@ import pickle
 from keras.datasets import imdb
 from keras.preprocessing.sequence import pad_sequences
 
-# max_words = 20000
-# (X_train, y_train), (X_test, y_test) = imdb.load_data(seed=1, num_words=max_words)
+max_words = 20000
+(X_train, y_train), (X_test, y_test) = imdb.load_data(seed=1, num_words=max_words)
 
 max_review_len=80
-# X_train=pad_sequences(X_train,truncating='pre', padding='pre', maxlen=max_review_len)
-# X_test=pad_sequences(X_test,truncating='pre', padding='pre', maxlen=max_review_len)
+X_train=pad_sequences(X_train,truncating='pre', padding='pre', maxlen=max_review_len)
+X_test=pad_sequences(X_test,truncating='pre', padding='pre', maxlen=max_review_len)
 
-# embed_vector_len=32
+embed_vector_len=32
 
-# model=Sequential()
-# model.add(Embedding(input_dim=max_words,output_dim=embed_vector_len,embeddings_initializer='uniform',mask_zero=True))
-# model.add(LSTM(100,kernel_initializer='uniform',dropout=0.2,recurrent_dropout=0.2))
-# model.add(Dense(1,activation='sigmoid'))
+model=Sequential()
+model.add(Embedding(input_dim=max_words,output_dim=embed_vector_len,embeddings_initializer='uniform',mask_zero=True))
+model.add(LSTM(100,kernel_initializer='uniform',dropout=0.2,recurrent_dropout=0.2))
+model.add(Dense(1,activation='sigmoid'))
 
-# model.compile(optimizer='Adam',loss='binary_crossentropy',metrics=['accuracy'])
-# model.summary()
+model.compile(optimizer='Adam',loss='binary_crossentropy',metrics=['accuracy'])
+model.summary()
 
-# History=model.fit(X_train,y_train,shuffle=True,batch_size=128,epochs=5)
+History=model.fit(X_train,y_train,shuffle=True,batch_size=128,epochs=5)
 
-# model_json = model.to_json()
-# with open('model.json','w') as json_file:
-#   json_file.write(model_json)
-# model.save_weights("model.h5")
+model_json = model.to_json()
+with open('model.json','w') as json_file:
+  json_file.write(model_json)
+model.save_weights("model.h5")
 
 json_file = open('model.json','r')
 loaded_model_json = json_file.read()
