@@ -1,0 +1,12 @@
+Python==3.8.3
+gunicorn==20.0.4
+Jinja2==2.10.1
+Flask==1.1.1
+numpy>=1.19.0
+pandas>=1.15.0
+tensorflow>=3.1.0
+keras>=1.15.0
+scikit-learn>=2.1.0
+itsdangerous==1.1.0
+MarkupSafe==1.1.1
+Werkzeug==1.0.1
