@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="../static/css/style.css">
+    <title>Movie Lovers</title>
+</head>
+
+<body>
+    <nav id="navbar">
+        <div id="logo">
+            <img src="../static/logo.png" alt="Movie Lovers">
+        </div>
+        <h1>Movie Review and Recommendation System</h1>
+    </nav>
+
+    <section id="home">
+        {% if status == 0 %}
+            <section class="searchbar">
+                <form action="/rec" method="POST">
+                    <input type="text" name="movie_name" placeholder="Search your hollywood movie here" required>
+                    <button>Enter</button>
+                </form>
+                <h1 class="Fail">Sorry, Your requested movie is not present in our database! You may have spelled incorrectly, Try again!</h1>
+            </section>
+        {% else %}
+            <section class="searchbar">
+                <form action="/rec" method="POST">
+                    <input type="text" name="movie_name" placeholder="Search your hollywood movie here" required>
+                    <button>Enter</button>
+                </form>
+            </section>
+
+            <section id="main">
+                <div class="poster">
+                    <img src="{{main_movie['Poster']}}" alt="Poster is not available!">
+                </div>
+                <div id="content">
+                    <h2>{{main_movie['Title']}}</h2>
+                    <h3>Released: {{main_movie['Released']}}</h3>
+                    <h3>Runtime: {{main_movie['Runtime']}}</h3>
+                    <h3>Genre: {{main_movie['Genre']}}</h3>
+                    <h3>Director: {{main_movie['Director']}}</h3>
+                    <h3>Actors: {{main_movie['Actors']}}</h3>
+                    <h3>IMDB Rating: {{main_movie['imdbRating']}}</h3>
+                    <h3>Plot:</h3>
+                    <p>{{main_movie['Plot']}}</p>
+                    <h3>Language: {{main_movie['Language']}}</h3>
+                    <h3>Country: {{main_movie['Country']}}</h3>
+                    <h3>Awards: {{main_movie['Awards']}}</h3>
+                    <h3>Production: {{main_movie['Production']}}</h3>
+                </div>
+            </section>
+            <section id="review">
+                <form action="{{url_for('predict')}}" method="POST">
+                    <input class="hidden" type="text" name="movie_name" value="{{main_movie['Title']}}">
+                    <h1>Make Review:</h1>
+                    <textarea class="review" name="review" rows="6" cols="100" placeholder="Enter your review here..." required></textarea>
+                    <button class="btn" value="rev">Submit</button>
+                </form>
+            
+                <div id="review_history">
+                    {% if rev_status == 1 %}
+                        {% if reviews|length > 0 %}
+                            <h1>Review History</h1>
+                            <table>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Review</th>
+                                    <th>Sentiment</th>
+                                    <th>Polarity</th>
+                                </tr>
+
+                                {% for r in reviews %}
+                                    <tr>
+                                        <td>{{r.date}}</td>
+                                        <td>{{r.content}}</td>
+                                        <td>{{r.sentiment}}</td>
+                                        <td>{{r.polarity}}</td>
+                                    </tr>
+                                {% endfor %}
+                            </table>
+                        {% else %}
+                            <h2>No reviews found</h2>
+                        {% endif %}
+                    {% endif %}
+                </div>
+                <div id="show_hide">
+                    <button class="btn" id="showReview">Show Reviews</button>
+                    <button class="btn" id="hideReview">Hide Reviews</button>
+                </div>
+            </section>
+            {% if rec_status == 1 %}
+                <h1 id="rec_you">Recommended Movies:</h1>
+                <h3 id="after_rec_you">(Click the Title)</h3>
+                <section id="rec">
+                    {% for movie in rec_movies %}
+                        <form class="rec_post" action="/rec" method="POST">
+                            <img src="{{movie['Poster']}}" alt="Poster is not available!">
+                            <input class="hidden" type="text" name="movie_name" value="{{movie['Title']}}">
+                            <button>{{movie['Title']}}</button>
+                        </form>
+                    {% endfor %}
+                </section>
+            {% else %}
+                <h1 class="Fail">Sorry, currently we don't have any recommendation for you!</h1>
+            {% endif %}
+        {% endif %}
+    </section>
+    <!-- <footer>
+        Copyright &copy;| All rights reserved!
+    </footer> -->
+    <script>
+        rev_hist = document.getElementById("review_history");
+        showRev = document.getElementById("showReview");
+        hideRev = document.getElementById("hideReview");
+        showRev.addEventListener("click",function(){
+            rev_hist.style.display="flex";
+            showRev.style.display="none";
+            hideRev.style.display="block";
+        });
+        hideRev.addEventListener("click",function(){
+            rev_hist.style.display="none";
+            showRev.style.display="block";
+            hideRev.style.display="none";
+        });
+    </script>
+</body>
+</html>

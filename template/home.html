@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="../static/css/style.css">
+    <title>Movie Lovers</title>
+</head>
+<body>
+    <nav id="navbar">
+        <div id="logo">
+            <img src="../static/logo.png" alt="Movie Lovers">
+        </div>
+        <h1>Movie Review and Recommendation System</h1>
+    </nav>
+    <section id="home">
+        <section class="searchbar">
+            <form action="/rec" method="POST">
+                <input type="text" name="movie_name" placeholder="Search your hollywood movie here" required>
+                <button>Enter</button>
+            </form>
+        </section>
+    </section>
+</body>
+</html>
