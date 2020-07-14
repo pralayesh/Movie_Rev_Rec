@@ -10,16 +10,22 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from pytz import timezone
 from tzlocal import get_localzone
-import keras
-from keras.models import Sequential,model_from_json
-from keras.layers import Dense,LSTM,Dropout,Activation
-from keras.layers.embeddings import Embedding
+from sklearn.feature_extraction.text import TfidfVectorizer
+from nltk.corpus import stopwords
+from nltk.stem.porter import PorterStemmer
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+from sklearn.naive_bayes import MultinomialNB
+import random
+import re
 import os
 import pickle
-from keras.datasets import imdb
-from keras.preprocessing.sequence import pad_sequences
 
 df = pd.read_csv('data.csv')
+df1=pd.read_csv('review_sentiment_data.csv')
+X=list(df1['review'].values)
+tv = TfidfVectorizer(max_features=5000,ngram_range=(1,2))
+X=tv.fit_transform(X)
 
 main_movie={}
 rec_movies=[]
@@ -30,7 +36,7 @@ count_matrix = cv.fit_transform(df['comb'])
 similarity = cosine_similarity(count_matrix)
 
 app = Flask(__name__,template_folder='template')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test1.db'
 db = SQLAlchemy(app)
 
 class Review(db.Model):
@@ -38,7 +44,7 @@ class Review(db.Model):
     movie=db.Column(db.String(100), nullable=False)
     content = db.Column(db.String(400), nullable = False)
     sentiment = db.Column(db.String(400), nullable = False)
-    polarity = db.Column(db.Float, nullable = False)
+    polarity = db.Column(db.Float)
     date = db.Column(db.DateTime,default = datetime.utcnow)
 
     def __repr__(self):
@@ -46,7 +52,7 @@ class Review(db.Model):
 
 @app.route('/')
 def home():
-    return render_template('index.html')
+    return render_template('home.html')
 
 @app.route('/rec',methods=['POST'])
 def recommend():
@@ -186,47 +192,36 @@ def recommend():
 @app.route('/rev',methods=['POST'])
 def predict():
     global main_movie,rec_movies,reviews
-    max_words = 20000
-    max_review_len=80
-    imdb.load_data(seed=1, num_words=max_words)
-    d=imdb.get_word_index()
-
-    json_file = open('model.json','r')
-    loaded_model_json = json_file.read()
-    json_file.close()
-
-    loaded_model = model_from_json(loaded_model_json)
-    loaded_model.load_weights("model.h5")
-
+    
     if request.method == "POST":
         movie = request.form['movie_name']
         review1  = request.form['review']
-        review1=review1.lower()
-        words = review1.split()
-        review = []
-        for word in words:
-            if word in d:
-                if d[word] > 20000: 
-                    review.append(2)
-                else:
-                    review.append(d[word]+3)
-            else:
-                review.append(2)
+        ps=PorterStemmer()
+        review = re.sub('[^a-zA-Z]',' ',review1)
+        review = review.lower()
+        review = review.split()
+        review=[ps.stem(word) for word in review if not word in stopwords.words('english')]
+        review=' '.join(review)
 
-        review=pad_sequences([review],truncating='pre', padding='pre', maxlen=max_review_len)
-        prediction=loaded_model.predict(review)
-        p = prediction[0][0]
+        revs=list(df1['review'].values)
+        revs.append(review)
 
-        if(p<0.5):
+        test_rev=tv.fit_transform(revs)
+        rev=test_rev[-1,:]
+
+        filename = 'sentiment_model.sav'
+        loaded_model = pickle.load(open(filename, 'rb'))
+        sentiment=loaded_model.predict(rev)[0]
+        print(sentiment)
+
+        if(sentiment==0):
             s='Negetive'
         else:
             s='Positive'
         now_utc = datetime.now(timezone('UTC'))
         now_local = now_utc.astimezone(get_localzone())
-        p=str(p)
-        p=p[:5]
-        p=float(p)
-        r = Review(movie=movie,content= review1,sentiment=s,polarity=p,date=now_local)
+        
+        r = Review(movie=movie,content= review1,sentiment=s,date=now_local)
         db.session.add(r)
         db.session.commit()
         
